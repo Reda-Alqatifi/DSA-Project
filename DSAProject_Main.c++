@@ -62,7 +62,7 @@ struct NodeSection
 {
     Section section;
 
-    DoublyLinkedList books;
+    DoublyLinkedList books; //! for Nested Linked List
     NodeSection *next;
 };
 
@@ -143,7 +143,7 @@ struct GeneralFunctions
     }
 
     //! To update the  number "No" of the node, usually we use it befor displaying
-    void updateNo(const string &type /*Section or Book*/)
+    void updateNo(/*Section or Book*/const string &type)
     {
         if(type == "Book")
         {
@@ -235,10 +235,137 @@ GeneralFunctions generalFunctions; //* Global Object to use anywhere
 
 //////////////////////////////////////
 
+struct SortFunctions
+{
+
+};
+
+
+//////////////
+
 
 struct DisplayFunctions
 {
-    
+    //! >>>>>>>>>>>>> Just for 'testing output' (Temporary) :
+    void displayBooks()
+    {
+        NodeBook *current;
+        current = booksList.head;
+
+        cout << "\n" << generalFunctions.centerText("<< Books List >>" , 50) 
+            << endl << endl;
+        while(current != NULL)
+        {
+            cout << "Book No :  " << current->book.No << endl;
+            cout << "title :  " << current->book.title << endl;
+            cout << "author :  " << current->book.author << endl;
+            cout << "code :  " << current->book.code << endl;
+            cout << "section :  " << current->book.section << endl;
+            cout << "price :  " << current->book.price << endl;
+            cout << "quantity :  " << current->book.quantity << endl;
+
+            generalFunctions.printLine(50 , '-');
+
+            current = current->next;
+        }
+    }
+
+    void displaySections()
+    {
+        NodeSection *current;
+        current = sectionsList.head;
+
+        cout << "\n" << generalFunctions.centerText("<< Sections List >>" , 50)
+            << endl << endl;
+        while(current != NULL)
+        {
+            cout << "Section No :  " << current->section.No << endl;
+            cout << "Section name :  " << current->section.name << endl;
+            cout << "num of Books in it :  " << current->section.booksNum << endl;
+
+            generalFunctions.printLine(50 , '-');
+
+            current = current->next;
+        }
+    }
+
+    void displaySectionsBooks()//Nestd list
+    {
+        NodeSection *current;
+        NodeBook *books;
+        current = sectionsList.head;
+
+        cout << "\n" << generalFunctions.centerText("<< Sections List >>" , 50)
+            << endl << endl;
+        while(current != NULL)
+        {
+            cout << "Section No :  " << current->section.No << endl;
+            cout << "Section name :  " << current->section.name << endl;
+            
+            books = current->books.head;
+            cout << " >>> Books in it :  " << endl;
+            while(books != NULL)
+            {
+                cout << "Book No :  " << books->book.No << endl;
+                cout << "title :  " << books->book.title << endl;
+                cout << "code :  " << books->book.code << endl;
+                
+                generalFunctions.printLine(50 , '-');
+
+                books = books->next;
+            }
+            
+
+            generalFunctions.printLine(50 , '=');
+
+            current = current->next;
+        }
+    }
+
+    void displayMenu()
+    {
+        cout<<"\n1- displayBooks"<<endl;
+        cout<<"2- displaySections"<<endl;
+        cout<<"3- displaySectionsBooks"<<endl; // nested list
+        cout<<"4- return"<<endl;
+
+        cout<<"\n> Enter Your Choice : ";
+    }
+
+    void displayMenuChoice()
+    {
+        int choice;
+        
+        do
+        {
+            displayMenu();
+            cin>>choice;
+
+            switch (choice)
+            {
+                case 1:
+                    displayBooks();
+                    break;
+                
+                case 2:
+                    displaySections();
+                    break;
+                
+                case 3:
+                    displaySectionsBooks();
+                    break;
+                
+                case 4:
+                    return;
+
+                default:
+                    break;
+            }
+
+        } while (choice != 4);
+        
+    }
+
 };
 
 DisplayFunctions displayFunctions; //* Global Object to use anywhere
@@ -247,13 +374,13 @@ DisplayFunctions displayFunctions; //* Global Object to use anywhere
 ///////////////
 
 
-struct AddFunctions
+struct AddFunctions //!  Done!
 {
     //TODO - Add "Sections" :
 
     void insertSectionNode(Section data) //! to Create a new section Node
     {
-        if (data.name.empty())
+        if (data.name.empty()) //* to not insert an empty section at a node
         {
             return;
         }
@@ -261,13 +388,14 @@ struct AddFunctions
         NodeSection *newNode;
         newNode = new NodeSection; //! or    newNode = new Node();
         newNode->section = data;
+        newNode->books.head = NULL; //! very important for Nested Linked List
 
-        if(sectionsList.head == NULL)
+        if(sectionsList.head == NULL) //! 1st node
         {
             sectionsList.head = newNode;
             newNode->next = NULL;
         }
-        else
+        else //! other nodes
         {
             NodeSection *last;
             last = sectionsList.head;
@@ -284,24 +412,28 @@ struct AddFunctions
     //! Const sections, that the user will have since the beginning
     void baseConstSections() 
     {
-        const int SIZE = 3;
+        const int SIZE = 4;
         Section sections[SIZE];
 
-        sections[0].name = "Fiction";
-        sections[0].No = 1;
+        sections[0].name = "Neither"; //! if not from any section
+        sections[0].No = 0;
         sections[0].booksNum = 0;
-
-        sections[1].name = "Acadimic";
-        sections[1].No = 2;
+        
+        sections[1].name = "Fiction";
+        sections[1].No = 1;
         sections[1].booksNum = 0;
 
-        sections[2].name = "Business";
-        sections[2].No = 3;
+        sections[2].name = "Acadimic";
+        sections[2].No = 2;
         sections[2].booksNum = 0;
+
+        sections[3].name = "Business";
+        sections[3].No = 3;
+        sections[3].booksNum = 0;
 
         for (int i = 0 ; i < SIZE ; i++)
         {
-            insertSectionNode(sections[i]);
+            insertSectionNode(sections[i]); //! to insert them into the node
         }
     }
 
@@ -311,17 +443,17 @@ struct AddFunctions
         NodeSection *current;
         current = sectionsList.head;
 
-        if (sectionsList.head == NULL)
+        if (sectionsList.head == NULL) //! no nodes
         {
             cout << "There is no sections yet!" << endl;
         }
-        else
+        else //! have nodes
         {
             generalFunctions.updateNo("Section"); //! to update the section's number "No"
             
             while (current != NULL)
             {
-                if(type == "Book")
+                if(type == "Book") //! for 'books' adding process
                 {
                     cout << current->section.No << " - " << current->section.name;
                     if(current->next != NULL)
@@ -329,7 +461,7 @@ struct AddFunctions
                         cout<<" , ";
                     }
                 }
-                else
+                else //! for 'sections' adding process
                 {
                     cout << current->section.No << " - " << current->section.name 
                         << "." << endl;
@@ -350,7 +482,7 @@ struct AddFunctions
         getline(cin , answer);
         
         string answerCopy = answer;
-        generalFunctions.lowerCase(answerCopy); //! to lower it
+        generalFunctions.lowerCase(answerCopy); //!to lower the copy 'not changing the value'
 
 
         NodeSection *current;
@@ -368,7 +500,7 @@ struct AddFunctions
                 
                 data.name.clear(); //! to not insert it at a node
                 same = true;
-                break;
+                return;
             }
             
             current = current->next;
@@ -388,7 +520,7 @@ struct AddFunctions
     {
         writeSection(data);
 
-        //! to check if we have a reppeted title and not insert at a node
+        //! to check if we have a reppeted section and not insert at a node
         if(data.name.empty())
         {
             return;
@@ -433,6 +565,84 @@ struct AddFunctions
 
     /////////
 
+    //TODO - add books into a section "Nested Linked List" :
+    
+    //! just for reusebility of code
+    void NestedListInsertMethod(NodeBook *currentBookMain , NodeSection *currentSection)
+    {
+        NodeBook *Copy = new NodeBook; //! to Make a node to copy values on
+                    
+        Copy->book = currentBookMain->book; //! to copu the orginal node
+        Copy->next = NULL;
+        Copy->previous = NULL;
+        
+        if (currentSection->books.head == NULL) //! 1st node
+        {
+            currentSection->books.head = Copy;
+            
+        }
+        else //! other nodes
+        {
+            NodeBook *last;
+            
+            //! t0 intilaize it wth the head for a specific section
+            last = currentSection->books.head; 
+
+            while(last->next != NULL)
+            {
+                last = last->next;
+            }
+
+            last->next = Copy;
+            Copy->next = NULL;
+            Copy->previous = last;
+        }
+        
+        //! to Update 'No'
+        int i = 1;
+        for(NodeBook *temp = currentSection->books.head ; temp != NULL ; temp = temp->next)
+        {
+            temp->book.No = i;
+            i++;
+        }
+    }
+    
+    //! to insert books into thier sections
+    void insertNestedList(NodeBook *currentBookMain)
+    {
+
+        if (currentBookMain == NULL) //! no books
+        {
+            return;
+        }
+        else //! have books
+        {
+            NodeSection *currentSection = sectionsList.head;
+
+            while (currentSection != NULL)
+            {
+                
+                if (currentBookMain->book.section == currentSection->section.name)
+                {
+                    NestedListInsertMethod(currentBookMain , currentSection);
+                    
+                    return;
+                }
+                else if(currentBookMain->book.section.empty() &&
+                        currentSection == sectionsList.head)        //! Neither
+                {
+                    NestedListInsertMethod(currentBookMain , currentSection);
+                }
+                
+                
+                currentSection = currentSection->next;
+            }
+
+        }
+    }
+    
+    /////////
+
     //TODO - Add "Books" :
 
     void insertBookNode(Book data) //! to Create a new book Node
@@ -441,13 +651,13 @@ struct AddFunctions
         newNode = new NodeBook; //! or    newNode = new Node();
         newNode->book = data;
 
-        if(booksList.head == NULL)
+        if(booksList.head == NULL) //! no nodes
         {
             booksList.head = newNode;
             newNode->next = NULL;
             newNode->previous = NULL;
         }
-        else
+        else //! other nodes
         {
             NodeBook *last;
             last = booksList.head;
@@ -460,12 +670,13 @@ struct AddFunctions
             newNode->next = NULL;
             newNode->previous = last;
         }
+
+        insertNestedList(newNode); //! to insert the book into its section
     }
     
     void writeBook(Book &data , int &counter) //! To write a new Book details
     {
-        
-        string Error;
+        string Error; //! to handle non sense input
         
         //! Title:
         cout << "> Title : ";
@@ -494,7 +705,7 @@ struct AddFunctions
                 same = true;
                 
                 data.title.clear(); //! to not insert it at a node
-                counter--;
+                counter--; //! to reevaluate the counter to its correct value
                 return;
             }
             
@@ -522,8 +733,7 @@ struct AddFunctions
         same = false; // to check if the typed value ame as another value of the list
         while (currentBook != NULL)
         {
-            string temp = currentBook->book.title; //! a copy for the nodes value
-            generalFunctions.lowerCase(temp); //! to lower it without change the orginal node
+            string temp = currentBook->book.code; //! a copy for the nodes value
 
             if(answerCode == temp) // if the user type a section which is already in the list
             {
@@ -552,22 +762,45 @@ struct AddFunctions
         
         cout << " ) - (Write a Number) : ";
         
+        NodeSection *currentSection;
+        currentSection = sectionsList.head;
+        
         int sectionNum;
         cin >> sectionNum;
 
-        generalFunctions.handleErrors(sectionNum , Error);
+        generalFunctions.handleErrors(sectionNum , Error); //! to handle non sense input
 
-        NodeSection *currentSection;
-        currentSection = sectionsList.head;
+        
+
+        same = false;
         while (currentSection != NULL)
         {
-            if(sectionNum == currentSection->section.No)
+            if(sectionNum == currentSection->section.No) //! to equalize data with the node
             {
-                data.section = currentSection->section.name;
-                // currentSection->books.head = 
+                if(sectionNum == sectionsList.head->section.No) //!to consider it 'Neither'
+                {
+                    data.section.clear();
+                    sectionsList.head->section.booksNum++;
+                    same = true;
+                }
+                else
+                {
+                    data.section = currentSection->section.name;
+                    currentSection->section.booksNum++;
+                    same = true;
+                }
+                
+
+                break;
             }
 
             currentSection = currentSection->next;
+        }
+
+        if(!same) //! If the choice doesn't from the entire section
+        {
+            data.section.clear();
+            sectionsList.head->section.booksNum++; //! to consider them 'Neither'
         }
         
 
@@ -604,7 +837,7 @@ struct AddFunctions
         cout << "> Availible Quantity : ";
         cin >> data.quantity;
         
-        generalFunctions.handleErrors(data.quantity , Error);
+        generalFunctions.handleErrors(data.quantity , Error); //! to handle non sense input
 
         //! No :
         data.No = counter;
@@ -666,7 +899,7 @@ struct AddFunctions
         } while (choice != "no" || choice != "n");
 
     }
-
+    
     /////////////////////////
     
     //TODO - "Menu" :
@@ -743,15 +976,6 @@ struct UpdateFunctions
 ///////////////
 
 
-struct SortFunctions
-{
-
-};
-
-
-//////////////
-
-
 struct SearchFunctions
 {
 
@@ -785,6 +1009,12 @@ struct TotalFunctions
 struct Menues
 {
     AddFunctions addFunctions;
+    RemoveFunctions removeFunctions;
+    UpdateFunctions updateFunctions;
+    SortFunctions sortFunctions;
+    SearchFunctions searchFunctions;
+    //* 'Display' has been decleared as a global object.
+    TotalFunctions totalFunctions;
     
     //! Employee / Main  Menu and the loop to chose options
     void mainMenu()
@@ -814,10 +1044,13 @@ struct Menues
         int choice = 0;
         string Error = " ";
 
+        addFunctions.baseConstSections(); //! to intial the First three sections (Important)
+
         do
         {
             mainMenu();
             cin>>choice;
+
             generalFunctions.handleErrors(choice , Error);
             if(Error == "Error") //! to return the user to main if he chose a wrong option
             {
@@ -849,7 +1082,7 @@ struct Menues
                     break;
 
                 case 6: //! display
-                    /*Working on it*/
+                    displayFunctions.displayMenuChoice(); //! just for testing (Temporary)
                     break;
 
                 case 7: //! Total
@@ -865,7 +1098,7 @@ struct Menues
                     break;
             }
 
-            generalFunctions.printLine(50 , '-');
+            generalFunctions.printLine(50 , '-'); //! print a Line between each option
 
         } while (choice != 8);
         
@@ -890,13 +1123,11 @@ int main()
     cout<<"<<<<<<<<[   Welcome to our Library Management System   ]>>>>>>>>"<<endl;
     cout<<generalFunctions.centerText(string(46 , '-') , 64)<<endl<<endl;
 
+    ///////////////////
 
-    
-    Add.baseConstSections(); //! to intial the 1st three sections
+    //! The Main Menu
 
     menues.employeeChoice(); //! Every operations will be here
-
-
 
     //////////////////
 
@@ -913,8 +1144,6 @@ int main()
     cout<<endl<<endl;
 
     ///////////////////
-
-
     
     return 0;
 }
