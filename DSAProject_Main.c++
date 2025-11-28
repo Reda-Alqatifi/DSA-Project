@@ -143,7 +143,8 @@ struct GeneralFunctions
     }
 
     //! To update the  number "No" of the node, usually we use it befor displaying
-    void updateNo(/*Section or Book*/const string &type)
+    /* type is  Section or Book */
+    void updateNo(const string &type)
     {
         if(type == "Book")
         {
@@ -156,7 +157,7 @@ struct GeneralFunctions
         }
         else
         {
-            int i = 1;
+            int i = 0;
             for (NodeSection *temp = sectionsList.head ; temp != NULL ; temp = temp->next)
             {
                 temp->section.No = i;
@@ -438,7 +439,7 @@ struct AddFunctions //!  Done!
     }
 
     //! display entire sections
-    void sectionsDisplayToAdd(const string &type /*Section or Book*/) 
+    void sectionsDisplay(const string &type /*Section or Book*/) 
     {
         NodeSection *current;
         current = sectionsList.head;
@@ -539,7 +540,7 @@ struct AddFunctions //!  Done!
         do
         {
             cout << "\nSections you have :" << endl;
-            sectionsDisplayToAdd("Section"); //! To display the emtire sections for sections
+            sectionsDisplay("Section"); //! To display the emtire sections for sections
 
             cout << "\nDo you want to add another section ( yes / no ) ?  ";
             cin >> choice;
@@ -559,7 +560,7 @@ struct AddFunctions //!  Done!
                 cout << "Wrong Entry! Please Try Again." << endl;
             }
 
-        } while (choice != "no" || choice != "n");
+        } while (choice != "no" && choice != "n");
 
     }
 
@@ -758,7 +759,7 @@ struct AddFunctions //!  Done!
         //! Section :
         cout << "> Section ( ";
 
-        sectionsDisplayToAdd("Book"); //! to display the entire sections but for books
+        sectionsDisplay("Book"); //! to display the entire sections but for books
         
         cout << " ) - (Write a Number) : ";
         
@@ -896,7 +897,7 @@ struct AddFunctions //!  Done!
                 return;
             }
 
-        } while (choice != "no" || choice != "n");
+        } while (choice != "no" && choice != "n");
 
     }
     
@@ -987,7 +988,306 @@ struct SearchFunctions
 
 struct RemoveFunctions
 {
+    //TODO - Remove "Section" :
     
+    void removeSection()
+    {
+        
+    }
+
+    /////////////
+
+    //TODO - Remove "Books" :
+
+    //! to decide if the node is 1st or last or mid   //    I must add update No
+    void removeBookNested(string code , string section , NodeBook *book , NodeSection *sec)
+    {
+        if (booksList.head == NULL) //! no Nodes
+        {
+            cout << "\nThere is no books!\n" << endl;
+            return;
+        }
+
+        if (book == sec->books.head ) //! firstst Node
+        {
+            sec->books.head = sec->books.head->next;
+            if(sec->books.head != NULL) //! if only one node
+            {
+                sec->books.head->previous = NULL;
+            }   
+            book->next = NULL;
+            
+            delete book;
+        }
+        else if (book->next == NULL) //! last Node
+        {
+            book->previous->next = NULL;
+            book->previous = NULL;
+
+            delete book;
+        }
+        else //! other Nodes
+        {
+            book->previous->next = book->next;
+            book->next->previous = book->previous;
+            book->previous = NULL;
+            book->next = NULL;
+
+            delete book;
+        }
+        
+    }
+    void removeBook(string code , string section , NodeBook *book)
+    {
+        if (booksList.head == NULL) //! no Nodes
+        {
+            cout << "\nThere is no books!\n" << endl;
+            return;
+        }
+
+        if (book == booksList.head ) //! firstst Node
+        {
+            booksList.head = booksList.head->next;
+            if(booksList.head != NULL) //! if only one node
+            {
+                booksList.head->previous = NULL;
+            }   
+            book->next = NULL;
+            
+            delete book;
+        }
+        else if (book->next == NULL) //! last Node
+        {
+            book->previous->next = NULL;
+            book->previous = NULL;
+
+            delete book;
+        }
+        else //! other Nodes
+        {
+            book->previous->next = book->next;
+            book->next->previous = book->previous;
+            book->previous = NULL;
+            book->next = NULL;
+
+            delete book;
+        }
+    }
+
+    //! to search about the book we want to remove, caller is for specify if nested or not
+    bool searchToRemove(string code , string section , const string &caller)
+    {
+        if (caller == "nested") //! to chek if it is the coy from the nested list
+        {
+            for (NodeSection *sec = sectionsList.head ; sec != NULL ; sec = sec->next)
+            {
+                if (section == sec->section.name)
+                {
+                    NodeBook *current = sec->books.head;
+                    
+                    while (current != NULL)
+                    {   
+                        //! to save the loop from crashes
+                        NodeBook *nextNode = current->next; 
+
+                        if (code == current->book.code)
+                        {
+                            removeBookNested(code , section , current , sec);
+                            sec->section.booksNum--;
+                            return true;
+                        }
+                        
+                        current = nextNode;
+                    }
+                }
+            }
+        }
+        else //! for the orginal which are not from nested list
+        {
+            NodeBook *book = booksList.head;
+            while (book != NULL)
+            {
+                NodeBook *nextNode = book->next;
+
+                if (code == book->book.code)
+                {
+                    removeBook(code , section , book);
+                    generalFunctions.updateNo("Book");
+                    return true;
+                }
+            }
+        }
+                
+        return false;
+    }
+    
+    //! to get the section from the number instade of its name. (for both section and book)
+    /*caller is to decide if it is for removing 'book' or 'section' */
+    string sectionsLoopToRemove(string &section , const string &caller)
+    {
+        NodeSection *current;
+        
+        int counter , secNo;
+        do
+        {    
+            string Error;
+
+            if (caller == "book")
+            {
+                cout << "\n> Enter the Section [ No. ] you want to remove from : ";
+            }
+            else
+            {
+                cout << "\nSections you have :\n" << endl;
+
+                AddFunctions Add;
+                Add.sectionsDisplay("Section");
+
+                cout << "\n> Enter the Section [ No. ] you want to remove : ";
+            }
+            
+            cin >> secNo;
+            generalFunctions.handleErrors(secNo , Error);
+
+            current = sectionsList.head;
+            counter = 0;     
+            while (current != NULL)
+            {
+                if (secNo == current->section.No)
+                {
+                    section = current->section.name;
+                    
+                    if(caller != "book") //! to remove section
+                    {
+                        removeSection();
+                    }
+                    
+                    return section;
+                }
+
+                counter++;
+                current = current->next;
+            }
+
+            if (secNo < 0 || secNo > counter)
+            {
+                cout << "Wrong Entry! Please, Try Again!" << endl;
+                continue;
+            }
+            
+
+        } while (secNo < 0 || secNo > counter);
+        
+    }
+
+    //! to let the user write the book information.
+    void writeToRemoveBook()
+    {
+        string choice , code , section;
+        AddFunctions Add;
+
+        do
+        {
+            cout << "\nBooks you have :\n "<<endl;
+            //TODO - displayBooks;
+
+            cout << "Sections you have :\n "<<endl;
+            Add.sectionsDisplay("Section");
+            
+            //! to ask about section he wants to remove from
+            sectionsLoopToRemove(section , "book"); 
+
+            cout << "> Enter The book [ Code ] to remove : ";
+            cin >> code;
+
+            if (searchToRemove(code , section , "nested") && 
+                searchToRemove(code , section , "normal"))
+            {
+                cout << "\nThe book with the code [ " << code
+                    << " ] has been removed successfully!" << endl;
+            }
+            else if (booksList.head == NULL)
+            {
+                cout << "\nThe library is already empty!\n" << endl;
+                generalFunctions.pause();
+                return;
+            }
+            else
+            {
+                cout << "\nThere is no book with the code [ " << code
+                    << " ] in the section '" << section << "'!" << endl;
+            }
+
+            cout << "Do you want to remove another book ( yes / no ) ? ";
+            cin >> choice;
+            generalFunctions.lowerCase(choice);
+
+        } while (choice != "no" && choice != "n");
+        
+    }
+
+    /////////////////////////
+    
+    //TODO - "Menu" :
+
+    void menuRemove() //! Add functions menu
+    {
+        cout<<endl;
+        generalFunctions.printLine(60 , '=');
+        cout<<"|"<<generalFunctions.centerText("Remove Menu", 58)<<"|"<<endl;
+        generalFunctions.printLine(60 , '-');
+
+        cout<<"| "<<setw(57)<<left<<"1 - Remove a book."<<"|"<<endl;
+        cout<<"| "<<setw(57)<<left<<"2 - Remove a section."<<"|"<<endl;
+        cout<<"| "<<setw(57)<<left<<"3 - Back to the Main Menu. "<<"|"<<endl;
+
+        generalFunctions.printLine(60 , '=');
+
+        /////////////////////////////////////
+
+        cout<<"\n> Enter your choice : ";
+    }
+    void menuRemoveChoice() //! Loop to choese which you want to add
+    {
+        Section section;
+        Book book;
+
+        string Error; //! to handle non sense input
+        
+        int choice;
+        do
+        {
+            menuRemove();
+            cin>>choice;
+
+            generalFunctions.handleErrors(choice , Error); //! to handle non sense input
+            if(Error == ERROR) //!to return the user to main menu if he chose a wrong option
+            {
+                generalFunctions.printLine(50 , '-');
+                return;
+            }
+
+            switch (choice)
+            {
+                case 1: //! Remove book
+                    writeToRemoveBook();
+                    break;
+                
+                case 2: //! Remove Section
+                    /*Working on it*/
+                    break;
+
+                case 3://! Return to thw main menu
+                    return;
+                
+                default:
+                    break;
+            }
+
+        } while (choice != 3);
+        
+    }
+
 };
 
 
@@ -1065,7 +1365,7 @@ struct Menues
                     break;
                 
                 case 2: //! Remove
-                    /*Working on it*/
+                    removeFunctions.menuRemoveChoice();
                     break;
 
                 case 3: //! Update
