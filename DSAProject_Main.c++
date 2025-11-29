@@ -988,19 +988,12 @@ struct SearchFunctions
 
 struct RemoveFunctions
 {
-    //TODO - Remove "Section" :
     
-    void removeSection()
-    {
-        
-    }
-
-    /////////////
 
     //TODO - Remove "Books" :
 
-    //! to decide if the node is 1st or last or mid   //    I must add update No
-    void removeBookNested(string code , string section , NodeBook *book , NodeSection *sec)
+    //! to remove the node 'book'
+    void removeBookNested(NodeBook *book , NodeSection *sec)
     {
         if (booksList.head == NULL) //! no Nodes
         {
@@ -1037,7 +1030,7 @@ struct RemoveFunctions
         }
         
     }
-    void removeBook(string code , string section , NodeBook *book)
+    void removeBook( NodeBook *book)
     {
         if (booksList.head == NULL) //! no Nodes
         {
@@ -1092,7 +1085,20 @@ struct RemoveFunctions
 
                         if (code == current->book.code)
                         {
-                            removeBookNested(code , section , current , sec);
+                            NodeBook *temp = current->next; //! to Update 'No'
+                            int i = current->book.No; //! to Update 'No'
+
+                            removeBookNested(current , sec);
+                            
+                            //! to Update 'No'
+                            while (temp != NULL)
+                            {
+                                temp->book.No = i;
+                                i++;
+
+                                temp = temp->next;
+                            }
+                            
                             sec->section.booksNum--;
                             return true;
                         }
@@ -1111,16 +1117,96 @@ struct RemoveFunctions
 
                 if (code == book->book.code)
                 {
-                    removeBook(code , section , book);
+                    removeBook(book);
                     generalFunctions.updateNo("Book");
                     return true;
                 }
+                
+                book = nextNode;
             }
         }
                 
         return false;
     }
     
+    //////////////
+
+    //TODO - Remove "Section" :
+    
+    //! to remove the node 'section'
+    void removeSection(NodeSection *current , string &section)
+    {
+        if (sectionsList.head == NULL) //! no Nodes
+        {
+            cout << "\nThere is no sections!\n" << endl;
+            return;
+        }
+
+        if (current == sectionsList.head ) //! firstst Node
+        {
+            cout << "\nYou cant delete this section!" << endl;
+            section = "protected";
+            return;
+        }
+        else if (current->next == NULL) //! last Node
+        {
+            //! to delete the orginal books
+            NodeBook *book = booksList.head;
+            while (book != NULL)
+            {
+                NodeBook *nextNode = book->next;
+                
+                if (book->book.section == current->section.name)
+                {
+                    removeBook(book);
+                }
+
+                book = nextNode;
+            }
+
+            //! to delete the section
+            NodeSection *temp = sectionsList.head;
+            while (temp->next->next != NULL)
+            {
+                temp = temp->next;
+            }
+
+            temp->next = NULL;
+
+            delete current;
+        }
+        else //! other Nodes
+        {
+            //! to delete the orginal books
+            NodeBook *book = booksList.head;
+            while (book != NULL)
+            {
+                NodeBook *nextNode = book->next;
+                
+                if (book->book.section == current->section.name)
+                {
+                    removeBook(book);
+                }
+
+                book = nextNode;
+            }
+            
+            //! to delete the section
+            NodeSection *temp = sectionsList.head;
+            while (temp->next != current)
+            {
+                temp = temp->next;
+            }
+            
+            temp->next = current->next;
+            current->next = NULL;
+
+            delete current;
+        }
+    }
+
+    /////////////
+
     //! to get the section from the number instade of its name. (for both section and book)
     /*caller is to decide if it is for removing 'book' or 'section' */
     string sectionsLoopToRemove(string &section , const string &caller)
@@ -1134,6 +1220,12 @@ struct RemoveFunctions
 
             if (caller == "book")
             {
+                if (booksList.head == NULL)
+                {
+                    cout << "\nthere is no books!" << endl;
+                    generalFunctions.pause();
+                    return section;
+                }
                 cout << "\n> Enter the Section [ No. ] you want to remove from : ";
             }
             else
@@ -1153,20 +1245,22 @@ struct RemoveFunctions
             counter = 0;     
             while (current != NULL)
             {
+                NodeSection *nextNode = current->next;
                 if (secNo == current->section.No)
                 {
                     section = current->section.name;
                     
                     if(caller != "book") //! to remove section
                     {
-                        removeSection();
+                        removeSection(current , section);
+                        return section;
                     }
                     
                     return section;
                 }
 
                 counter++;
-                current = current->next;
+                current = nextNode;
             }
 
             if (secNo < 0 || secNo > counter)
@@ -1174,53 +1268,68 @@ struct RemoveFunctions
                 cout << "Wrong Entry! Please, Try Again!" << endl;
                 continue;
             }
-            
 
         } while (secNo < 0 || secNo > counter);
         
     }
 
     //! to let the user write the book information.
-    void writeToRemoveBook()
+    void writeToRemove(const string &caller)
     {
         string choice , code , section;
         AddFunctions Add;
 
         do
         {
-            cout << "\nBooks you have :\n "<<endl;
-            //TODO - displayBooks;
-
-            cout << "Sections you have :\n "<<endl;
-            Add.sectionsDisplay("Section");
-            
-            //! to ask about section he wants to remove from
-            sectionsLoopToRemove(section , "book"); 
-
-            cout << "> Enter The book [ Code ] to remove : ";
-            cin >> code;
-
-            if (searchToRemove(code , section , "nested") && 
-                searchToRemove(code , section , "normal"))
+            if (caller == "book")
             {
-                cout << "\nThe book with the code [ " << code
-                    << " ] has been removed successfully!" << endl;
-            }
-            else if (booksList.head == NULL)
-            {
-                cout << "\nThe library is already empty!\n" << endl;
-                generalFunctions.pause();
-                return;
+                cout << "\nBooks you have :\n "<<endl;
+                //TODO - displayBooks;
+
+                cout << "Sections you have :\n "<<endl;
+                Add.sectionsDisplay("Section");
+                
+                //! to ask about section he wants to remove from
+                sectionsLoopToRemove(section , "book"); 
+
+                if (booksList.head == NULL)
+                {
+                    return;
+                }
+
+                cout << "> Enter The book [ Code ] to remove : ";
+                cin >> code;
+
+                if (searchToRemove(code , section , "nested") && 
+                    searchToRemove(code , section , "normal"))
+                {
+                    cout << "\nThe book with the code [ " << code
+                        << " ] has been removed successfully!" << endl;
+                }
+                else
+                {
+                    cout << "\nThere is no book with the code [ " << code
+                        << " ] in the section '" << section << "'!" << endl;
+                }
+
+                cout << "Do you want to remove another book ( yes / no ) ? ";
             }
             else
             {
-                cout << "\nThere is no book with the code [ " << code
-                    << " ] in the section '" << section << "'!" << endl;
-            }
+                sectionsLoopToRemove(section , "section");
 
-            cout << "Do you want to remove another book ( yes / no ) ? ";
+                if (section != "protected")
+                {
+                    cout << "\nThe section [ " << section
+                        << " ] with its all books have been removed successfully!" << endl;
+                }
+
+                cout << "Do you want to remove another section ( yes / no ) ? ";
+            }
+            
             cin >> choice;
             generalFunctions.lowerCase(choice);
+            generalFunctions.printLine(50 , '-');
 
         } while (choice != "no" && choice != "n");
         
@@ -1270,11 +1379,11 @@ struct RemoveFunctions
             switch (choice)
             {
                 case 1: //! Remove book
-                    writeToRemoveBook();
+                    writeToRemove("book");
                     break;
                 
                 case 2: //! Remove Section
-                    /*Working on it*/
+                    writeToRemove("section");
                     break;
 
                 case 3://! Return to thw main menu
