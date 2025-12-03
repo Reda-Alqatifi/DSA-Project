@@ -98,7 +98,7 @@ struct GeneralFunctions
     //! To change the input case int Lower (small letters), very important in Searching
     void lowerCase(string &word)//* changes the orginal value
     {
-        // to make it Lower
+        //! to make it Lower
         for (size_t Lower = 0 ; Lower < word.length() ; Lower++) 
         {
             if (word[Lower] >= 'A' && word[Lower] <= 'Z') 
@@ -220,9 +220,198 @@ GeneralFunctions generalFunctions; //* Global Object to use anywhere
 
 //////////////////////////////////////
 
-struct SortFunctions
+
+struct SortFunctions //! DONE
 {
 
+    //TODO - "Sort ( Merge Sort )" :
+    
+    //! to split the list into tow lists from the middle
+    void splitList(NodeBook *head , NodeBook **firstHalf , NodeBook **secondHalf)
+    {
+        //! to find the middle of the list
+        NodeBook *slow = head; //* move  one step
+        NodeBook *fast = head->next; //* move  tow steps
+
+        while (fast != NULL && fast->next != NULL)
+        {
+            slow = slow->next; //! it will stop at the middle of the list
+            fast = fast->next->next;
+        }
+
+        *firstHalf = head;
+        *secondHalf = slow->next; //! the 2nd half will start after the mid of the whole list
+        
+        //! to break the links betwean the 1st half and the 2nd half
+        if (slow->next != NULL)
+        {
+            slow->next->previous = NULL;
+        }
+        slow->next = NULL;
+    }
+
+    //! to 'merge' and 'sort' the lists,
+    /* caller is :  title , code , author , section , price , or quantity */
+    NodeBook *sortedMerge(NodeBook *ListA , NodeBook *ListB , const string &caller)
+    {
+        //! to stop the 'recursion' if one list reaches its end
+        if (ListA == NULL)
+        {
+            return ListB;
+        }
+        if (ListB == NULL)
+        {
+            return ListA;
+        }
+
+        NodeBook *result = NULL; //! The head of the merged list
+
+        bool compare; //! to compare the '1st list' with the '2nd list'
+
+        //* sort them by smaller to greator only
+        if (caller == "title")
+            compare = ListA->book.title < ListB->book.title;
+
+        else if (caller == "code")
+            compare = ListA->book.code < ListB->book.code;
+
+        else if (caller == "author")
+            compare = ListA->book.author < ListB->book.author;
+
+        else if (caller == "price")
+            compare = ListA->book.price < ListB->book.price;
+
+        else if (caller == "quantity")
+            compare = ListA->book.quantity < ListB->book.quantity;
+
+        else //! section
+            compare = ListA->book.section < ListB->book.section;
+
+
+        //! if compare is 'true' ( ListA  <  ListB )
+        if (compare)
+        {
+            result = ListA;
+            result->next = sortedMerge(ListA->next , ListB , caller); //! mrege recursivly
+
+            if (result->next != NULL)
+            {
+                result->next->previous = result;
+            }
+            result->previous = NULL; //! the previous of the head of the list
+        }
+        else //! if compare is 'false' ( ListA  >  ListB )
+        {
+            result = ListB;
+            result->next = sortedMerge(ListA , ListB->next , caller); //! mrege recursivly
+
+            if (result->next != NULL)
+            {
+                result->next->previous = result; //! to link the nodes' previous pointer
+            }
+            result->previous = NULL; //! the previous of the head of the list
+        }
+
+        return result; 
+    }
+
+    //! to manage every operations recursivly
+    /* caller is :  title , code , author , section , price , or quantity */
+    void mergeSort(NodeBook **head , const string &caller)
+    {
+        
+        //! if it is  empty  or  it has only one element
+        if (head == NULL || *head == NULL || (*head)->next == NULL)
+        {
+            return;
+        }
+        
+        NodeBook *firstHalf;
+        NodeBook *secondHalf;
+
+        splitList(*head , &firstHalf , &secondHalf); //! to split the list into tow lists
+
+        mergeSort(&firstHalf , caller); //! to split the 1st half till it has only one node
+        mergeSort(&secondHalf , caller); //! to split the 2nd half till it has only one node
+
+        //! to sort the nodes from each half and merge them together
+        *head = sortedMerge(firstHalf , secondHalf , caller);
+    }
+
+    /////////////////////////
+    
+    //TODO - "Menu" :
+
+    void menuSort() //! Add functions menu
+    {
+        cout << endl;
+        generalFunctions.printLine(60, '=');
+        cout << "|" << generalFunctions.centerText("Sort Menu", 58) << "|" << endl;
+        generalFunctions.printLine(60, '-');
+
+        cout << "| " << setw(57) << left << "1 - Sort by { Title }." << "|" << endl;
+        cout << "| " << setw(57) << left << "2 - Sort by { Code }." << "|" << endl;
+        cout << "| " << setw(57) << left << "3 - Sort by { Author }." << "|" << endl;
+        cout << "| " << setw(57) << left << "4 - Sort by { Section }." << "|" << endl;
+        cout << "| " << setw(57) << left << "5 - Sort by { Price }." << "|" << endl;
+        cout << "| " << setw(57) << left << "6 - Sort by { Quantity }." << "|" << endl;
+        cout << "| " << setw(57) << left << "7 - Back to the Main Menu. " << "|" << endl;
+
+        generalFunctions.printLine(60, '=');
+
+        /////////////////////////////////////
+
+        cout << "\n> Enter your choice : ";
+    }
+    void menuSortChoice() //! Loop to choese which you want to add
+    {
+        Section section;
+        Book book;
+        
+        int choice;
+        do
+        {
+            menuSort();
+            cin>>choice;
+            
+            generalFunctions.handleErrors(choice); 
+
+            switch (choice)
+            {
+                case 1: //! Sort by Title
+                    mergeSort(&booksList.head , "title");
+                    break;
+                
+                case 2: //! Sort by Code
+                    mergeSort(&booksList.head , "code");
+                    break;
+
+                case 3: //! Sort by Author
+                    mergeSort(&booksList.head , "author");
+                    break;
+                
+                case 4: //! Sort by Section
+                    mergeSort(&booksList.head , "section");
+                    break;
+                
+                case 5: //! Sort by Price
+                    mergeSort(&booksList.head , "price");
+                    break;
+
+                case 6: //! Sort by Quantity
+                    mergeSort(&booksList.head , "quantity");
+                    break;
+
+                case 7://! Return to thw main menu
+                    return;
+                
+                default:
+                    break;
+            }
+
+        } while (choice != 7);
+        
+    }
 };
 
 
@@ -774,6 +963,7 @@ struct AddFunctions //!  Done!
     {
         string choice = "yes";
 
+        //! to count books
         int counter = 1;
         for (NodeBook *temp = booksList.head ; temp != NULL ; temp = temp->next)
         {
@@ -835,8 +1025,6 @@ struct AddFunctions //!  Done!
     {
         Section section;
         Book book;
-
-        
         
         int choice;
         do
@@ -952,7 +1140,7 @@ struct RemoveFunctions //! DONE
             if (code == book->book.code)
             {
                 removeBook(book);
-                generalFunctions.updateNo("Book");
+                generalFunctions.updateNo("Book"); //! to update books 'No'
 
                 return true;
             }
@@ -1192,8 +1380,6 @@ struct RemoveFunctions //! DONE
     {
         Section section;
         Book book;
-
-        
         
         int choice;
         do
@@ -1223,7 +1409,6 @@ struct RemoveFunctions //! DONE
         } while (choice != 3);
         
     }
-
 };
 
 
@@ -1301,7 +1486,7 @@ struct Menues
                     break;
 
                 case 4: //! Sort
-                    /*Working on it*/
+                    sortFunctions.menuSortChoice();
 
                     break;
 
