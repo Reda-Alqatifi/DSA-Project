@@ -81,7 +81,6 @@ LinkedList sectionsList = {NULL}; //! to intialize "head" of this object by "NUL
 struct GeneralFunctions
 {
     //! Handeling Errors function - (not same data type imput)
-    /*Error is : if he choose wrong option again*/
     void handleErrors(int &choice)
     {
         while (cin.fail())
@@ -219,6 +218,245 @@ GeneralFunctions generalFunctions; //* Global Object to use anywhere
 
 
 //////////////////////////////////////
+
+
+struct TotalFunctions //! DONE
+{
+    int totalBooks()
+    {
+        int count = 0;
+        for (NodeBook* temp = booksList.head; temp != NULL; temp = temp->next)
+            count++;
+        return count;
+    }
+
+    int totalSections()
+    {
+        int count = 0;
+        for (NodeSection* temp = sectionsList.head; temp != NULL; temp = temp->next)
+            count++;
+        return count;
+    }
+
+    int totalBooksInSection(const string& sectionName)
+    {
+        int count = 0;
+        for (NodeBook* temp = booksList.head; temp != NULL; temp = temp->next)
+        {
+            if(temp->book.section == sectionName || 
+               (sectionName == "Neither" && temp->book.section.empty()))
+                count++;
+        }
+        return count;
+    }
+
+    void showDetailedSummary()
+    {
+        TotalFunctions total;
+        cout << "\n" << string(50, '=') << endl;
+        cout << "|" << generalFunctions.centerText("LIBRARY SUMMARY", 48) << "|" << endl;
+        cout << string(50, '=') << endl;
+        cout << "| " << setw(30) << left << "Total Sections" 
+             << ": " << setw(14) << left << total.totalSections() << " |" << endl;
+        cout << "| " << setw(30) << left << "Total Books" 
+             << ": " << setw(14) << left << total.totalBooks() << " |" << endl;
+        cout << string(50, '-') << endl;
+        
+        //! Show books per section
+        for (NodeSection* temp = sectionsList.head; temp != NULL; temp = temp->next)
+        {
+            cout << "| " << setw(30) << left << ("Books in " + temp->section.name) 
+                 << ": " << setw(14) << left << temp->section.booksNum << " |" << endl;
+        }
+        cout << string(50, '=') << endl;
+    }
+
+    void totalMenu()
+    {
+        int choice;
+
+        do
+        {
+            cout << "\n" << string(50, '=') << endl;
+            cout << "|" << generalFunctions.centerText("Total Menu", 48) << "|" << endl;
+            cout << string(50, '=') << endl;
+            cout << "| " << setw(46) << left << "1 - Total amount of books." << " |" << endl;
+            cout << "| " << setw(46) << left << "2 - Total amount of sections." << " |" << endl;
+            cout << "| " << setw(46) << left << "3 - Detailed library summary." << " |" << endl;
+            cout << "| " << setw(46) << left << "4 - Back to the Main Menu." << " |" << endl;
+            cout << string(50, '=') << endl;
+            cout << "\n> Enter Your Choice : ";
+
+            cin >> choice;
+            generalFunctions.handleErrors(choice);
+
+            switch(choice)
+            {
+                case 1:
+                    cout << "\n>>> Total Books in Library: " << totalBooks() << endl;
+                    generalFunctions.pause();
+                    break;
+
+                case 2:
+                    cout << "\n>>> Total Sections in Library: " << totalSections() << endl;
+                    generalFunctions.pause();
+                    break;
+
+                case 3:
+                    showDetailedSummary();
+                    generalFunctions.pause();
+                    break;
+
+                case 4:
+                    return;
+
+                default:
+                    cout << "\n>>> Wrong Entry! Please try again.\n";
+                    generalFunctions.pause();
+                    break;
+            }
+
+
+        } while(choice != 4);
+    }
+};
+
+
+//////////////
+
+
+struct DisplayFunctions //! DONE
+{
+    //! Print table header for books
+    void printBooksHeader()
+    {
+        cout << endl;
+        generalFunctions.printLine(91 , '=');
+        cout << "| " << setw(3) << left << "No." 
+             << "| " << setw(20) << left << "Title"
+             << "| " << setw(15) << left << "Author"
+             << "| " << setw(10) << left << "Code"
+             << "| " << setw(12) << left << "Section"
+             << "| " << setw(7)  << left << "Price"
+             << "| " << setw(8)  << left << "Quantity |\n";
+        generalFunctions.printLine(91 , '=');
+    }
+
+    //! Print all books in formatted table
+    void displayBooks()
+    {
+        generalFunctions.updateNo("Book");
+
+        if(booksList.head == NULL)
+        {
+            cout << "\n>>> There are no books in the library!\n";
+            return;
+        }
+
+        printBooksHeader();
+
+        for (NodeBook* temp = booksList.head; temp != NULL; temp = temp->next)
+        {
+            cout << "| " << setw(3) << left << temp->book.No
+                 << "| " << setw(20) << left << 
+                 (temp->book.title.length() > 20 ? temp->book.title.substr(0, 17) + "..." : temp->book.title)
+                 << "| " << setw(15) << left << 
+                 (temp->book.author.length() > 15 ? temp->book.author.substr(0, 12) + "..." : temp->book.author)
+                 << "| " << setw(10) << left << temp->book.code
+                 << "| " << setw(12) << left << temp->book.section
+                 << "| $" << setw(6) << left << fixed << setprecision(2) << temp->book.price
+                 << "| " << setw(9) << left << temp->book.quantity << "|\n";
+        }
+
+        generalFunctions.printLine(91 , '=');
+    }
+
+    //! Print table header for sections
+    void printSectionsHeader()
+    {
+        generalFunctions.printLine(36 , '=');
+        cout << "| " << setw(3) << left << "No." 
+             << "| " << setw(20) << left << "Section Name" 
+             << "| " << setw(6) << left << "Books" << "|\n";
+        generalFunctions.printLine(36 , '=');
+    }
+
+    //! Display all sections
+    void displaySections()
+    {
+        generalFunctions.updateNo("Section");
+
+        if(sectionsList.head == NULL)
+        {
+            cout << "\n>>> There are no sections yet!\n";
+            return;
+        }
+
+        printSectionsHeader();
+
+        for (NodeSection* temp = sectionsList.head; temp != NULL; temp = temp->next)
+        {
+            cout << "| " << setw(3) << left << temp->section.No
+                 << "| " << setw(20) << left << temp->section.name
+                 << "| " << setw(6) << left << temp->section.booksNum << "|\n";
+        }
+
+        generalFunctions.printLine(36 , '=');
+    }
+
+    //! Display menu
+    void displayMenu()
+    {
+        cout << "\n" << string(50, '=') << endl;
+        cout << "|" << generalFunctions.centerText("Display Menu", 48) << "|" << endl;
+        cout << string(50, '=') << endl;
+        cout << "| " << setw(46) << left << "1 - Display books." << " |" << endl;
+        cout << "| " << setw(46) << left << "2 - Display sections." << " |" << endl;
+        cout << "| " << setw(46) << left << "3 - Back to the Main Menu." << " |" << endl;
+        cout << string(50, '=') << endl;
+        cout << "\n> Enter Your Choice : ";
+    }
+
+    //! Menu choice loop
+    void displayMenuChoice()
+    {
+        int choice;
+
+        do
+        {
+            displayMenu();
+            cin >> choice;
+            generalFunctions.handleErrors(choice);
+
+            switch(choice)
+            {
+                case 1:
+                    displayBooks();
+                    generalFunctions.pause();
+                    break;
+                
+                case 2:
+                    displaySections();
+                    generalFunctions.pause();
+                    break;
+                
+                case 3:
+                    return;
+
+                default:
+                    cout << "\n>>> Wrong Entry! Please try again.\n";
+                    generalFunctions.pause();
+                    break;
+            }
+
+        } while(choice != 3);
+    }
+};
+
+DisplayFunctions displayFunctions; //* Global Object to use anywhere
+
+
+///////////////
 
 
 struct SortFunctions //! DONE
@@ -380,34 +618,49 @@ struct SortFunctions //! DONE
             {
                 case 1: //! Sort by Title
                     mergeSort(&booksList.head , "title");
+                    displayFunctions.displayBooks();
+                    generalFunctions.pause();
                     break;
                 
                 case 2: //! Sort by Code
                     mergeSort(&booksList.head , "code");
+                    displayFunctions.displayBooks();
+                    generalFunctions.pause();
                     break;
 
                 case 3: //! Sort by Author
                     mergeSort(&booksList.head , "author");
+                    displayFunctions.displayBooks();
+                    generalFunctions.pause();
                     break;
                 
                 case 4: //! Sort by Section
                     mergeSort(&booksList.head , "section");
+                    displayFunctions.displayBooks();
+                    generalFunctions.pause();
                     break;
                 
                 case 5: //! Sort by Price
                     mergeSort(&booksList.head , "price");
+                    displayFunctions.displayBooks();
+                    generalFunctions.pause();
                     break;
 
                 case 6: //! Sort by Quantity
                     mergeSort(&booksList.head , "quantity");
+                    displayFunctions.displayBooks();
+                    generalFunctions.pause();
                     break;
 
                 case 7://! Return to thw main menu
                     return;
                 
                 default:
+                    cout<<"\n* Wrong Entry! please try again!"<<endl;
                     break;
             }
+
+            generalFunctions.printLine(50 , '-'); //! print a Line between each option
 
         } while (choice != 7);
         
@@ -415,163 +668,10 @@ struct SortFunctions //! DONE
 };
 
 
-//////////////
-
-
-struct DisplayFunctions
-{
-    //! >>>>>>>>>>>>> Just for 'testing output' (Temporary) :
-    void displayBooks()
-    {
-        NodeBook *current;
-        current = booksList.head;
-
-        cout << "\n" << generalFunctions.centerText("<< Books List >>" , 50) 
-            << endl << endl;
-        while(current != NULL)
-        {
-            cout << "Book No :  " << current->book.No << endl;
-            cout << "title :  " << current->book.title << endl;
-            cout << "author :  " << current->book.author << endl;
-            cout << "code :  " << current->book.code << endl;
-            cout << "section :  " << current->book.section << endl;
-            cout << "price :  " << current->book.price << endl;
-            cout << "quantity :  " << current->book.quantity << endl;
-
-            generalFunctions.printLine(50 , '-');
-
-            current = current->next;
-        }
-    }
-
-    void displaySections()
-    {
-        NodeSection *current;
-        current = sectionsList.head;
-
-        cout << "\n" << generalFunctions.centerText("<< Sections List >>" , 50)
-            << endl << endl;
-        while(current != NULL)
-        {
-            cout << "Section No :  " << current->section.No << endl;
-            cout << "Section name :  " << current->section.name << endl;
-            cout << "num of Books in it :  " << current->section.booksNum << endl;
-
-            generalFunctions.printLine(50 , '-');
-
-            current = current->next;
-        }
-    }
-
-    void displaySectionsBooks() //*By section
-    {
-        NodeSection *current;
-        NodeBook *books;
-        current = sectionsList.head;
-
-        cout << "\n" << generalFunctions.centerText("<< Sections List >>" , 50)
-            << endl << endl;
-        while(current != NULL)
-        {
-            cout << "Section No :  " << current->section.No << endl;
-            
-            if (current == sectionsList.head) //! if section = Neither
-                cout << "Section name :  " << endl;
-            else
-                cout << "Section name :  " << current->section.name << endl;
-            
-            books = booksList.head;
-            cout << " >>> Books in it :  " << endl;
-            
-            int i = 1;
-            while(books != NULL)
-            {
-                if (books->book.section == current->section.name)
-                {
-                    cout << "Book No :  " << i << endl;
-                    cout << "title :  " << books->book.title << endl;
-                    cout << "code :  " << books->book.code << endl;
-                    
-                    i++;
-                    generalFunctions.printLine(50 , '-');
-                }
-                //! if section = Neither
-                else if (current == sectionsList.head && books->book.section.empty())
-                {
-                    
-                    
-                    cout << "Book No :  " << i << endl;
-                    cout << "title :  " << books->book.title << endl;
-                    cout << "code :  " << books->book.code << endl;
-                    
-                    i++;
-                    generalFunctions.printLine(50 , '-');
-                }
-                
-                books = books->next;
-            }
-            
-            generalFunctions.printLine(50 , '=');
-
-            current = current->next;
-        }
-    }
-
-    void displayMenu()
-    {
-        cout<<"\n1- displayBooks"<<endl;
-        cout<<"2- displaySections"<<endl;
-        cout<<"3- displaySectionsBooks"<<endl; // nested list
-        cout<<"4- return"<<endl;
-
-        cout<<"\n> Enter Your Choice : ";
-    }
-
-    void displayMenuChoice()
-    {
-        int choice;
-        
-        do
-        {
-            displayMenu();
-            cin>>choice;
-
-            generalFunctions.handleErrors(choice);
-
-            switch (choice)
-            {
-                case 1:
-                    displayBooks(); //! books
-                    break;
-                
-                case 2:
-                    displaySections(); //! just sections
-                    break;
-                
-                case 3:
-                    displaySectionsBooks(); //! sections with their books
-                    break;
-                
-                case 4: //! return
-                    return;
-
-                default:
-                    break;
-            }
-
-        } while (choice != 4);
-        
-    }
-
-};
-
-DisplayFunctions displayFunctions; //* Global Object to use anywhere
-
-
 ///////////////
 
 
-struct AddFunctions //!  Done!
+struct AddFunctions //!  DONE
 {
     //TODO - Add "Sections" :
 
@@ -1048,8 +1148,11 @@ struct AddFunctions //!  Done!
                     return;
                 
                 default:
+                    cout<<"\n* Wrong Entry! please try again!"<<endl;
                     break;
             }
+
+            generalFunctions.printLine(50 , '-'); //! print a Line between each option
 
         } while (choice != 3);
         
@@ -1097,6 +1200,12 @@ struct RemoveFunctions //! DONE
             if (book->book.section == temp->section.name)
             {
                 temp->section.booksNum--;
+                break;
+            }
+            else if (book->book.section.empty() && temp == sectionsList.head)
+            {
+                temp->section.booksNum--;
+                break;
             }
         }
 
@@ -1304,10 +1413,10 @@ struct RemoveFunctions //! DONE
         {
             if (caller == "book") //! for book
             {
-                cout << "\nBooks you have :\n "<<endl;
-                //TODO - displayBooks;
+                cout << "\nBooks you have : "<<endl;
+                displayFunctions.displayBooks();
 
-                cout << "Sections you have :\n "<<endl;
+                cout << "\nSections you have :\n "<<endl;
                 Add.sectionsDisplay("Section");
                 
                 //! to ask about section he wants to remove from
@@ -1403,21 +1512,15 @@ struct RemoveFunctions //! DONE
                     return;
                 
                 default:
+                    cout<<"\n* Wrong Entry! please try again!"<<endl;
                     break;
             }
+
+            generalFunctions.printLine(50 , '-'); //! print a Line between each option
 
         } while (choice != 3);
         
     }
-};
-
-
-/////////////
-
-
-struct TotalFunctions 
-{
-
 };
 
 
@@ -1428,11 +1531,11 @@ struct Menues
 {
     AddFunctions addFunctions; //! DONE
     RemoveFunctions removeFunctions; //! DONE
-    UpdateFunctions updateFunctions;
-    SortFunctions sortFunctions;
+    UpdateFunctions updateFunctions; 
+    SortFunctions sortFunctions; //! DONE
     SearchFunctions searchFunctions;
-    //* 'Display' has been decleared as a global object.
-    TotalFunctions totalFunctions;
+    /* 'Display' has been decleared as a global object.*/ //! DONE
+    TotalFunctions totalFunctions; //! DONE
     
     //! Employee / Main  Menu and the loop to chose options
     void mainMenu()
@@ -1460,7 +1563,6 @@ struct Menues
     void employeeChoice() //! Every operations we gonna do in the program are here
     {
         int choice = 0;
-        string Error = " ";
 
         addFunctions.baseConstSections(); //! to intial the First three sections (Important)
 
@@ -1495,11 +1597,11 @@ struct Menues
                     break;
 
                 case 6: //! display
-                    displayFunctions.displayMenuChoice(); //? just for testing (Temporary)
+                    displayFunctions.displayMenuChoice();
                     break;
 
                 case 7: //! Total
-                    /*Working on it*/
+                    totalFunctions.totalMenu();
                     break;
                 
                 case 8: //! Exit
