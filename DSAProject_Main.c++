@@ -114,11 +114,12 @@ struct GeneralFunctions
         cout<<string(length, symbol)<<endl;
     }
     
-    //! to stop the screen till the user click 'Enter'
-    void pause()
+    //! to stop the screen till the user click 'Enter' , caller is:  getline  or anything
+    void pause(const string & caller)
     {
         cout<<"\n> Press Enter to continue...";
-        cin.ignore();
+        if (caller != "getline")
+            cin.ignore();
         cin.get();
 
         cout<<endl;
@@ -294,17 +295,17 @@ struct TotalFunctions //! DONE
             {
                 case 1:
                     cout << "\n>>> Total Books in Library: " << totalBooks() << endl;
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
 
                 case 2:
                     cout << "\n>>> Total Sections in Library: " << totalSections() << endl;
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
 
                 case 3:
                     showDetailedSummary();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
 
                 case 4:
@@ -312,7 +313,7 @@ struct TotalFunctions //! DONE
 
                 default:
                     cout << "\n>>> Wrong Entry! Please try again.\n";
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
             }
 
@@ -331,18 +332,30 @@ struct DisplayFunctions //! DONE
     void printBooksHeader()
     {
         cout << endl;
-        generalFunctions.printLine(91 , '=');
+        generalFunctions.printLine(93 , '=');
         cout << "| " << setw(3) << left << "No." 
              << "| " << setw(20) << left << "Title"
              << "| " << setw(15) << left << "Author"
              << "| " << setw(10) << left << "Code"
              << "| " << setw(12) << left << "Section"
-             << "| " << setw(7)  << left << "Price"
+             << "| " << setw(9)  << left << "Price"
              << "| " << setw(8)  << left << "Quantity |\n";
-        generalFunctions.printLine(91 , '=');
+        generalFunctions.printLine(93 , '=');
     }
 
     //! Print all books in formatted table
+    void displayBooksMethod(NodeBook *temp)
+    {
+        cout << "| " << setw(3) << left << temp->book.No
+            << "| " << setw(20) << left << 
+            (temp->book.title.length() > 20 ? temp->book.title.substr(0, 17) + "..." : temp->book.title)
+            << "| " << setw(15) << left << 
+            (temp->book.author.length() > 15 ? temp->book.author.substr(0, 12) + "..." : temp->book.author)
+            << "| " << setw(10) << left << temp->book.code
+            << "| " << setw(12) << left << temp->book.section
+            << "| $" << setw(8) << left << fixed << setprecision(2) << temp->book.price
+            << "| " << setw(9) << left << temp->book.quantity << "|\n";
+    }
     void displayBooks()
     {
         generalFunctions.updateNo("Book");
@@ -357,18 +370,10 @@ struct DisplayFunctions //! DONE
 
         for (NodeBook* temp = booksList.head; temp != NULL; temp = temp->next)
         {
-            cout << "| " << setw(3) << left << temp->book.No
-                 << "| " << setw(20) << left << 
-                 (temp->book.title.length() > 20 ? temp->book.title.substr(0, 17) + "..." : temp->book.title)
-                 << "| " << setw(15) << left << 
-                 (temp->book.author.length() > 15 ? temp->book.author.substr(0, 12) + "..." : temp->book.author)
-                 << "| " << setw(10) << left << temp->book.code
-                 << "| " << setw(12) << left << temp->book.section
-                 << "| $" << setw(6) << left << fixed << setprecision(2) << temp->book.price
-                 << "| " << setw(9) << left << temp->book.quantity << "|\n";
+            displayBooksMethod(temp);
         }
 
-        generalFunctions.printLine(91 , '=');
+        generalFunctions.printLine(93 , '=');
     }
 
     //! Print table header for sections
@@ -382,6 +387,12 @@ struct DisplayFunctions //! DONE
     }
 
     //! Display all sections
+    void displaySectionsMethod(NodeSection *temp)
+    {
+        cout << "| " << setw(3) << left << temp->section.No
+            << "| " << setw(20) << left << temp->section.name
+            << "| " << setw(6) << left << temp->section.booksNum << "|\n";
+    }
     void displaySections()
     {
         generalFunctions.updateNo("Section");
@@ -396,9 +407,7 @@ struct DisplayFunctions //! DONE
 
         for (NodeSection* temp = sectionsList.head; temp != NULL; temp = temp->next)
         {
-            cout << "| " << setw(3) << left << temp->section.No
-                 << "| " << setw(20) << left << temp->section.name
-                 << "| " << setw(6) << left << temp->section.booksNum << "|\n";
+            displaySectionsMethod(temp);
         }
 
         generalFunctions.printLine(36 , '=');
@@ -432,12 +441,12 @@ struct DisplayFunctions //! DONE
             {
                 case 1:
                     displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
                 
                 case 2:
                     displaySections();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
                 
                 case 3:
@@ -445,7 +454,7 @@ struct DisplayFunctions //! DONE
 
                 default:
                     cout << "\n>>> Wrong Entry! Please try again.\n";
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
             }
 
@@ -619,37 +628,37 @@ struct SortFunctions //! DONE
                 case 1: //! Sort by Title
                     mergeSort(&booksList.head , "title");
                     displayFunctions.displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
                 
                 case 2: //! Sort by Code
                     mergeSort(&booksList.head , "code");
                     displayFunctions.displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
 
                 case 3: //! Sort by Author
                     mergeSort(&booksList.head , "author");
                     displayFunctions.displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
                 
                 case 4: //! Sort by Section
                     mergeSort(&booksList.head , "section");
                     displayFunctions.displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
                 
                 case 5: //! Sort by Price
                     mergeSort(&booksList.head , "price");
                     displayFunctions.displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
 
                 case 6: //! Sort by Quantity
                     mergeSort(&booksList.head , "quantity");
                     displayFunctions.displayBooks();
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     break;
 
                 case 7://! Return to thw main menu
@@ -659,8 +668,6 @@ struct SortFunctions //! DONE
                     cout<<"\n* Wrong Entry! please try again!"<<endl;
                     break;
             }
-
-            generalFunctions.printLine(50 , '-'); //! print a Line between each option
 
         } while (choice != 7);
         
@@ -1172,8 +1179,204 @@ struct UpdateFunctions
 ///////////////
 
 
-struct SearchFunctions
+struct SearchFunctions //! DONE
 {
+    //! Generic function to search inside books (by Title, Author, or Code)
+    void searchBooks(const string &searchType)
+    {
+        if (booksList.head == NULL)
+        {
+            cout << "\n>>> There are no books in the library to search for!\n";
+            return;
+        }
+
+        string query;
+        cout << "\n> Enter the " << searchType << " to search : ";
+        
+        cin.ignore();
+        getline(cin, query);
+        
+        generalFunctions.lowerCase(query); 
+
+        bool found = false;
+        
+        //! Display
+        displayFunctions.printBooksHeader();
+
+        for (NodeBook* temp = booksList.head; temp != NULL; temp = temp->next)
+        {
+            string dataToCheck;
+
+            if (searchType == "Title") dataToCheck = temp->book.title;
+            else if (searchType == "Author") dataToCheck = temp->book.author;
+            else if (searchType == "Code") dataToCheck = temp->book.code;
+            else dataToCheck = temp->book.section; //! Section
+
+            generalFunctions.lowerCase(dataToCheck); //! lower it for comparison
+
+            if (dataToCheck.find(query) != string::npos)
+            {
+                displayFunctions.displayBooksMethod(temp);
+                
+                found = true;
+            }
+        }
+        generalFunctions.printLine(93 , '=');
+
+        if (!found)
+        {
+            cout << "\n>>> No matches found for \"" << query << "\" in " << searchType << "s.\n";
+        }
+    }
+
+    void searchSection()
+    {
+        if (sectionsList.head == NULL)
+        {
+            cout << "\n>>> There are no sections to search for!\n";
+            return;
+        }
+
+        string query;
+        cout << "\n> Enter the Section Name to search : ";
+        
+        cin.ignore();
+        getline(cin, query);
+        
+        generalFunctions.lowerCase(query);
+
+        bool found = false;
+
+        //! Display: 
+        displayFunctions.printSectionsHeader();
+
+        for (NodeSection* temp = sectionsList.head; temp != NULL; temp = temp->next)
+        {
+            string sectionName = temp->section.name;
+            string sectionNameLower = sectionName;
+            generalFunctions.lowerCase(sectionNameLower);
+
+            if (sectionNameLower.find(query) != string::npos)
+            {
+                displayFunctions.displaySectionsMethod(temp);
+                found = true;
+            }
+        }
+        generalFunctions.printLine(36 , '=');
+
+        if (!found)
+        {
+            cout << "\n>>> No section found matching \"" << query << "\".\n";
+        }
+    }
+
+    void BooksMenuSearch() 
+    {
+        cout << endl;
+        generalFunctions.printLine(60, '=');
+        cout << "|" << generalFunctions.centerText("Books Search Menu", 58) << "|" << endl;
+        generalFunctions.printLine(60, '-');
+
+        cout << "| " << setw(57) << left << "1 - Search by { Title }." << "|" << endl;
+        cout << "| " << setw(57) << left << "2 - Search by { Code }." << "|" << endl;
+        cout << "| " << setw(57) << left << "3 - Search by { Author }." << "|" << endl;
+        cout << "| " << setw(57) << left << "4 - Search by { Section }." << "|" << endl;
+        cout << "| " << setw(57) << left << "5 - Back to the Main Menu. " << "|" << endl;
+
+        generalFunctions.printLine(60, '=');
+        cout << "\n> Enter your choice : ";
+    }
+
+    void BooksMenuSearchChoice() 
+    {
+        int choice;
+        do
+        {
+            BooksMenuSearch();
+            cin >> choice;
+            
+            generalFunctions.handleErrors(choice); 
+
+            switch (choice)
+            {
+                case 1:
+                    searchBooks("Title");
+                    generalFunctions.pause("getline");
+                    break;
+                
+                case 2:
+                    searchBooks("Code");
+                    generalFunctions.pause("getline");
+                    break;
+
+                case 3:
+                    searchBooks("Author");
+                    generalFunctions.pause("getline");
+                    break;
+                
+                case 4:
+                    searchBooks("Section");
+                    generalFunctions.pause("getline");
+                    break;
+                
+                case 5:
+                    return;
+                
+                default:
+                    cout << "\n* Wrong Entry! please try again!" << endl;
+                    break;
+            }
+
+        } while (choice != 5);
+    }
+
+
+    void menuSearch() 
+    {
+        cout << endl;
+        generalFunctions.printLine(60, '=');
+        cout << "|" << generalFunctions.centerText("Search Menu", 58) << "|" << endl;
+        generalFunctions.printLine(60, '-');
+
+        cout << "| " << setw(57) << left << "1 - Search a Book." << "|" << endl;
+        cout << "| " << setw(57) << left << "2 - Search a Section." << "|" << endl;
+        cout << "| " << setw(57) << left << "3 - Back to the Main Menu. " << "|" << endl;
+
+        generalFunctions.printLine(60, '=');
+        cout << "\n> Enter your choice : ";
+    }
+
+    void menuSearchChoice()
+    {
+        int choice;
+        do
+        {
+            menuSearch();
+            cin >> choice;
+            
+            generalFunctions.handleErrors(choice); 
+
+            switch (choice)
+            {
+                case 1:
+                    BooksMenuSearchChoice();
+                    break;
+                
+                case 2:
+                    searchSection();
+                    generalFunctions.pause("getline");
+                    break;
+                
+                case 3:
+                    return;
+                
+                default:
+                    cout << "\n* Wrong Entry! please try again!" << endl;
+                    break;
+            }
+
+        } while (choice != 3);
+    }
 
 };
 
@@ -1353,7 +1556,7 @@ struct RemoveFunctions //! DONE
                 if (booksList.head == NULL)
                 {
                     cout << "\nthere is no books!" << endl;
-                    generalFunctions.pause();
+                    generalFunctions.pause("");
                     return section;
                 }
                 cout << "\n> Enter the Section [ No. ] you want to remove from : ";
@@ -1593,7 +1796,7 @@ struct Menues
                     break;
 
                 case 5: //! Search
-                    /*Working on it*/
+                    searchFunctions.menuSearchChoice();
                     break;
 
                 case 6: //! display
