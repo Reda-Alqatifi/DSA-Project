@@ -5,6 +5,15 @@ using namespace std;
 
 //! >>>>>>>>>>   D S A  _  P r o j e c t  -  M A I N   <<<<<<<<<<<<
 
+/*
+?         > This Project is made by (Group E): 
+?
+?               -  Reda Alqatifi.
+?               -  Ali Alburahim.
+?               -  Mohammed Aljasem.
+?               -  Mahdi Alhashim.
+*/
+
 
 //TODO - >>>>>>>>>>>>>>]  General  [<<<<<<<<<<<<<<
 
@@ -184,34 +193,6 @@ struct GeneralFunctions
         int rightSpace = width - text.length() - leftSpace;
 
         return string(leftSpace , ' ') + text + string(rightSpace , ' ');
-    }
-
-    //! to make the 1st letter of every word in a text  in "Upper case" , useful for display
-    string UpperCaseFirstLetter(string text) //* doesn't change the orginal value
-    {
-        bool Upper = true;
-
-        for (size_t i = 0 ; i < text.length() ; i++)
-        {
-            if (text[i] == ' ') // * or isspace(words[i])
-            {
-                Upper = true;
-            }
-            else
-            {
-                if (Upper)
-                {
-                    text[i] = toupper(text[i]);
-                    Upper = false;
-                }
-                else
-                {
-                    text[i] = tolower(text[i]);
-                }
-            }
-        }
-
-        return text;
     }
 };
 
@@ -914,7 +895,7 @@ struct AddFunctions //!  DONE
         NodeBook *currentBook;
         currentBook = booksList.head;
 
-        bool same = false; // to check if the typed value ame as another value of the list
+        bool same = false; // to check if the typed value is as another value of the list
         while (currentBook != NULL)
         {
             string temp = currentBook->book.title; //! a copy for the nodes value
@@ -1170,8 +1151,356 @@ struct AddFunctions //!  DONE
 ///////////////
 
 
-struct UpdateFunctions
+struct UpdateFunctions //! DONE
 {
+    //TODO - Update "Section" :
+    
+    void updateSectionName()
+    {
+        if (sectionsList.head == NULL)
+        {
+            cout << "\n>>> There are no sections to update!\n";
+            return;
+        }
+
+        cout << "\nSections you have :" << endl;
+        AddFunctions addFunc; 
+        addFunc.sectionsDisplay("Section"); // Displaying sections
+
+        int secNo;
+        cout << "\n> Enter the Section [ No. ] you want to update: ";
+        cin >> secNo;
+        generalFunctions.handleErrors(secNo);
+
+        NodeSection *targetSection = sectionsList.head;
+        bool found = false;
+
+        while (targetSection != NULL)
+        {
+            if (targetSection->section.No == secNo)
+            {
+                found = true;
+                break;
+            }
+            targetSection = targetSection->next;
+        }
+
+        if (!found)
+        {
+            cout << "\n>>> Section not found!\n";
+            return;
+        }
+
+        if (targetSection->section.name == "Neither")
+        {
+            cout << "\n>>> You cannot rename the default 'Neither' section.\n";
+            return;
+        }
+
+        string oldName = targetSection->section.name;
+        string newName;
+
+        cout << "\n> Enter the new name for section [" << oldName << "]: ";
+        cin.ignore();
+        getline(cin, newName);
+
+        //! Check duplicates
+        NodeSection *check = sectionsList.head;
+        while (check != NULL)
+        {
+            string existingName = check->section.name;
+            string newNameLower = newName;
+            generalFunctions.lowerCase(existingName);
+            generalFunctions.lowerCase(newNameLower);
+
+            if (existingName == newNameLower && check != targetSection)
+            {
+                cout << "\n>>> This section name already exists!\n";
+                return;
+            }
+            check = check->next;
+        }
+
+        // Apply Update
+        targetSection->section.name = newName;
+
+        //! Update all books belonging to this section
+        NodeBook *bookNode = booksList.head;
+        
+        while (bookNode != NULL)
+        {
+            if (bookNode->book.section == oldName)
+            {
+                bookNode->book.section = newName;
+            }
+            bookNode = bookNode->next;
+        }
+
+        cout << "\n* Section updated successfully!";
+    }
+
+    //TODO - Update "Book" :
+
+    void updateBookMenu(NodeBook *targetBook)
+    {
+        cout << "\n" << string(40, '-') << endl;
+        cout << " Updating Book: " << targetBook->book.title << endl;
+        cout << string(40, '-') << endl;
+        cout << "1. Update Title\n";
+        cout << "2. Update Author\n";
+        cout << "3. Update Code\n";
+        cout << "4. Update Section\n";
+        cout << "5. Update Price\n";
+        cout << "6. Update Quantity\n";
+        cout << "7. Finish Updating\n";
+        cout << string(40, '-') << endl;
+        cout << "> Enter choice: ";
+    }
+
+    void updateBookDetails()
+    {
+        if (booksList.head == NULL)
+        {
+            cout << "\n>>> There are no books to update!\n";
+            return;
+        }
+
+        string code;
+        cout << "\n> Enter the Code of the book you want to update: ";
+        cin >> code;
+
+        NodeBook *targetBook = booksList.head;
+        
+        //! if exist or not
+        bool found = false;
+        while (targetBook != NULL)
+        {
+            if (targetBook->book.code == code)
+            {
+                found = true;
+                break;
+            }
+            targetBook = targetBook->next;
+        }
+
+        if (!found)
+        {
+            cout << "\n>>> Book with code [" << code << "] not found!\n";
+            return;
+        }
+
+        int choice;
+        do
+        {
+            updateBookMenu(targetBook);
+            cin >> choice;
+            generalFunctions.handleErrors(choice);
+
+            switch (choice)
+            {
+                case 1: //! Title
+                {
+                    string newTitle;
+                    
+                    cout << "> Enter The New Title: ";
+                    cin.ignore();
+                    getline(cin, newTitle);
+                    
+                    string copyTitle = newTitle;
+                    generalFunctions.lowerCase(copyTitle);
+
+                    //! Check duplicate code
+                    bool exists = false;
+                    NodeBook *temp = booksList.head;
+                    while (temp != NULL)
+                    {
+                        string copyTempTitle = temp->book.title;
+                        generalFunctions.lowerCase(copyTempTitle);
+
+                        if (temp->book.title == copyTitle && temp != targetBook)
+                        {
+                            exists = true;
+                            break;
+                        }
+                        temp = temp->next;
+                    }
+
+                    if (exists) cout << "\n>>> Title already exists! Update failed.\n";
+                    else 
+                    {
+                        targetBook->book.title = newTitle;
+                        cout << "* Title updated.\n";
+                    }
+
+                    break;
+                }
+                case 2: //! Author
+                {
+                    cout << "> Enter The New Author: ";
+                    cin.ignore();
+                    getline(cin, targetBook->book.author);
+                    cout << "* Author updated.\n";
+                    break;
+                }
+                case 3: //! Code
+                {
+                    string newCode;
+                    cout << "> Enter The New Code: ";
+                    cin >> newCode;
+                    
+                    //! Check duplicate code
+                    bool exists = false;
+                    NodeBook *temp = booksList.head;
+                    while (temp != NULL)
+                    {
+                        if (temp->book.code == newCode && temp != targetBook)
+                        {
+                            exists = true;
+                            break;
+                        }
+                        temp = temp->next;
+                    }
+
+                    if (exists) cout << "\n>>> Code already exists! Update failed.\n";
+                    else 
+                    {
+                        targetBook->book.code = newCode;
+                        cout << "* Code updated.\n";
+                    }
+                    break;
+                }
+                case 4: //! Section
+                {
+                    AddFunctions addFunc;
+                    cout << "\nSections Available:\n";
+                    addFunc.sectionsDisplay("Section");
+                    
+                    int secNo;
+                    cout << "> Enter The New Section Number: ";
+                    cin >> secNo;
+                    generalFunctions.handleErrors(secNo);
+
+                    NodeSection *newSecNode = sectionsList.head;
+                    NodeSection *oldSecNode = sectionsList.head;
+                    bool secFound = false;
+
+                    //! Find new section node
+                    while (newSecNode != NULL)
+                    {
+                        if (newSecNode->section.No == secNo)
+                        {
+                            secFound = true;
+                            break;
+                        }
+                        newSecNode = newSecNode->next;
+                    }
+
+                    //! Find old section node (to decrement count)
+                    while (oldSecNode != NULL)
+                    {
+                        if (oldSecNode->section.name == targetBook->book.section || 
+                        (targetBook->book.section.empty() && oldSecNode->section.name == "Neither"))
+                        {
+                            break;
+                        }
+                        oldSecNode = oldSecNode->next;
+                    }
+
+                    if (secFound && newSecNode != oldSecNode)
+                    {
+                        //* Update counts
+                        if(oldSecNode) oldSecNode->section.booksNum--;
+                        if(newSecNode) newSecNode->section.booksNum++;
+
+                        //* Update book string
+                        if (newSecNode->section.name == "Neither")
+                            targetBook->book.section.clear(); // Empty for Neither
+                        else
+                            targetBook->book.section = newSecNode->section.name;
+
+                        cout << "* Section moved to [" << newSecNode->section.name << "].\n";
+                    }
+                    else if (!secFound)
+                    {
+                        cout << "\n>>> Invalid Section Number.\n";
+                    }
+                    else
+                    {
+                        cout << "\n>>> Book is already in this section.\n";
+                    }
+                    break;
+                }
+                case 5: //! Price
+                {
+                    cout << "> Enter The New Price: ";
+                    cin >> targetBook->book.price;
+                    cout << "* Price updated.\n";
+                    break;
+                }
+                case 6: //! Quantity
+                {
+                    cout << "> Enter The New Quantity: ";
+                    cin >> targetBook->book.quantity;
+                    cout << "* Quantity updated.\n";
+                    break;
+                }
+                case 7:
+                    return;
+                    
+                default:
+                    cout << "Invalid choice.\n";
+            }
+        } while (choice != 7);
+    }
+
+    //TODO - Menu :
+
+    void menuUpdate()
+    {
+        cout << endl;
+        generalFunctions.printLine(60, '=');
+        cout << "|" << generalFunctions.centerText("Update Menu", 58) << "|" << endl;
+        generalFunctions.printLine(60, '-');
+
+        cout << "| " << setw(57) << left << "1 - Update a Book." << "|" << endl;
+        cout << "| " << setw(57) << left << "2 - Update a Section." << "|" << endl;
+        cout << "| " << setw(57) << left << "3 - Back to Main Menu." << "|" << endl;
+
+        generalFunctions.printLine(60, '=');
+        cout << "\n> Enter your choice : ";
+    }
+
+    void menuUpdateChoice()
+    {
+        int choice;
+        do
+        {
+            menuUpdate();
+            cin >> choice;
+            generalFunctions.handleErrors(choice);
+
+            switch (choice)
+            {
+                case 1:
+                    updateBookDetails();
+                    generalFunctions.pause("");
+                    break;
+
+                case 2:
+                    updateSectionName();
+                    generalFunctions.pause("getline");
+                    break;
+
+                case 3:
+                    return;
+
+                default:
+                    cout << "\n* Wrong Entry! please try again!" << endl;
+                    break;
+            }
+
+        } while (choice != 3);
+    }
 
 };
 
@@ -1734,9 +2063,9 @@ struct Menues
 {
     AddFunctions addFunctions; //! DONE
     RemoveFunctions removeFunctions; //! DONE
-    UpdateFunctions updateFunctions; 
+    UpdateFunctions updateFunctions; //! DONE
     SortFunctions sortFunctions; //! DONE
-    SearchFunctions searchFunctions;
+    SearchFunctions searchFunctions; //! DONE
     /* 'Display' has been decleared as a global object.*/ //! DONE
     TotalFunctions totalFunctions; //! DONE
     
@@ -1763,7 +2092,7 @@ struct Menues
 
         cout<<"\n> Enter your choice : ";
     }
-    void employeeChoice() //! Every operations we gonna do in the program are here
+    void mainMenuChoice() //! Every operations we gonna do in the program are here
     {
         int choice = 0;
 
@@ -1787,7 +2116,7 @@ struct Menues
                     break;
 
                 case 3: //! Update
-                    /*Working on it*/
+                    updateFunctions.menuUpdateChoice();
                     break;
 
                 case 4: //! Sort
@@ -1844,7 +2173,7 @@ int main()
 
     //! The Main Menu
 
-    menues.employeeChoice(); //! Every operations will be here
+    menues.mainMenuChoice(); //! Every operations will be here
 
     //////////////////
 
