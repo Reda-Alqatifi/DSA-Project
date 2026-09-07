@@ -9,12 +9,18 @@ The program lets a library employee manage books and sections entirely in memory
 - **Sorting** is done with an in-place **merge sort** on the books list.
 - **Searching** is a linear, case-insensitive substring scan over the list.
 
-## Group E
+## TEAM
 
-- Reda Alqatifi
-- Ali Alburahim
-- Mohammed Aljasem
-- Mahdi Alhashim
+| Name | Tasks Done |
+|---|---|
+| Reda Alqatifi | Adding (for employee) - Removing (for employee) - Sorting (for employee) - General system core - Merging everything together. |
+| Ali Alburahim | Displaying  (for employee) - Total (for employee). |
+| Mohammed Aljasem  |	Searching (for employee) -	Presentation and report (less than 30 pages). | 
+| Mahdi Alhashim | Updating (for employee) - Presentation and report (less than 30 pages). |
+
+
+
+- 
 
 ## Features
 
